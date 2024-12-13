@@ -206,6 +206,8 @@ class Calendario:
     @staticmethod
     def get_calendar_service():
         creds = None
+
+        # Tentar carregar o token salvo
         if os.path.exists('token.json'):
             try:
                 creds = Credentials.from_authorized_user_file('token.json', Calendario.SCOPES)
@@ -213,26 +215,33 @@ class Calendario:
                 st.error(f"Erro ao carregar token.json: {e}. Regenerando token...")
                 os.remove('token.json')
 
+        # Caso não exista ou o token não seja válido, criar novo fluxo
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json',
-                    Calendario.SCOPES
-                )
-                flow.redirect_uri = 'http://localhost:65015/'  # Atualize para o URI correto
-                creds = flow.run_local_server(
-                    port=0,
-                    authorization_prompt_message="Por favor, autentique usando a nova conta Google."
-                )
+                # Carregar credenciais do Streamlit Secrets
+                client_secrets = {
+                    "web": {
+                        "client_id": st.secrets["google"]["client_id"],
+                        "project_id": st.secrets["google"]["project_id"],
+                        "auth_uri": st.secrets["google"]["auth_uri"],
+                        "token_uri": st.secrets["google"]["token_uri"],
+                        "auth_provider_x509_cert_url": st.secrets["google"]["auth_provider_x509_cert_url"],
+                        "client_secret": st.secrets["google"]["client_secret"]
+                    }
+                }
 
-            # Salve o token gerado para uso futuro
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json())
+                # Criar o fluxo de autenticação
+                flow = InstalledAppFlow.from_client_config(client_secrets, Calendario.SCOPES)
+                creds = flow.run_local_server(port=0)
 
+                # Salvar o token para uso futuro
+                with open('token.json', 'w') as token:
+                    token.write(creds.to_json())
+
+        # Construir o serviço do Google Calendar
         return build('calendar', 'v3', credentials=creds)
-
 
 
     @staticmethod
@@ -318,20 +327,42 @@ class Calendario:
     @staticmethod
     def get_calendar_service():
         creds = None
+
+        # Tentar carregar o token salvo
         if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', Calendario.SCOPES)
+            try:
+                creds = Credentials.from_authorized_user_file('token.json', Calendario.SCOPES)
+            except Exception as e:
+                st.error(f"Erro ao carregar token.json: {e}. Regenerando token...")
+                os.remove('token.json')
+
+        # Caso não exista ou o token não seja válido, criar novo fluxo
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', Calendario.SCOPES)
-                creds = flow.run_local_server(port=0)
-            with open('token.json', 'w') as token:
-                token.write(creds.to_json())
+                # Carregar credenciais do Streamlit Secrets
+                client_secrets = {
+                    "web": {
+                        "client_id": st.secrets["google"]["client_id"],
+                        "project_id": st.secrets["google"]["project_id"],
+                        "auth_uri": st.secrets["google"]["auth_uri"],
+                        "token_uri": st.secrets["google"]["token_uri"],
+                        "auth_provider_x509_cert_url": st.secrets["google"]["auth_provider_x509_cert_url"],
+                        "client_secret": st.secrets["google"]["client_secret"]
+                    }
+                }
 
-        service = build('calendar', 'v3', credentials=creds)
-        return service
+                # Criar o fluxo de autenticação
+                flow = InstalledAppFlow.from_client_config(client_secrets, Calendario.SCOPES)
+                creds = flow.run_local_server(port=0)
+
+                # Salvar o token para uso futuro
+                with open('token.json', 'w') as token:
+                    token.write(creds.to_json())
+
+        # Construir o serviço do Google Calendar
+        return build('calendar', 'v3', credentials=creds)
 
     @staticmethod
     def create_event(summary, start_time):
