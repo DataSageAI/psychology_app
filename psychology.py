@@ -832,7 +832,6 @@ def main():
         ("Cadastro de Pacientes", pagina_cadastro_pacientes),
         ("Registro de Sessões de Terapia", pagina_registro_sessoes),
         ("Gerenciamento de Prontuários", pagina_gerenciamento_prontuarios),
-        ("Agendar Consulta", pagina_agendar_consulta),
         ("Gerar Relatórios e Laudos", pagina_gerar_relatorio)
     ]
 
@@ -864,8 +863,8 @@ def main():
         pagina_registro_sessoes()
     elif st.session_state.pagina == "Gerenciamento de Prontuários":
         pagina_gerenciamento_prontuarios()
-    elif st.session_state.pagina == "Agendar Consulta":
-        pagina_agendar_consulta()
+    #elif st.session_state.pagina == "Agendar Consulta":
+    #    pagina_agendar_consulta()
     elif st.session_state.pagina == "Gerar Relatórios e Laudos":
         pagina_gerar_relatorio()
     
