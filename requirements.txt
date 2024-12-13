@@ -1,0 +1,7 @@
+google_api_python_client==2.149.0
+google_auth_oauthlib==1.2.1
+openai==1.57.4
+protobuf==5.29.1
+python-dotenv==1.0.1
+pytz==2024.1
+streamlit==1.36.0
